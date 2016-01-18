@@ -16,6 +16,17 @@ var y = d3.scale.linear().range([height, 0]);
 var xAxis = d3.svg.axis().orient('bottom').scale(x);
 var yAxis = d3.svg.axis().orient('left').scale(y);
 
+// append tooltip element
+var tooltip = d3.select('body')
+    .append('div')
+    .attr('class', 'tooltip')
+    .style('opacity', 0);
+
+// set colorscheme
+var color = d3.scale.ordinal()
+    .domain(['pop', 'hip hop', 'country', 'rock', 'jazz', 'metal'])
+    .range(['#d53e4f', '#fdae61', '#ffffbf', '#abdda4', '#66c2a5', '#3288bd']);
+
 // load data for graph
 d3.csv('../assets/data/genres.csv', function(data) {
   data.forEach(function(d) {
@@ -37,8 +48,13 @@ function spotifyGenreGraph(data) {
       .attr('r', 10)
       .attr('cx', function(d, i) { return countRamp(d.count); })
       .attr('cy', function(d) { return listenerRamp(d.listeners); })
-      .style('fill', '#ff7878')
-      .style('stroke', '#ff0000');
+      .style('fill', function(d) { return color(d.top_genre); })
+      .on('mouseover', mouseover)
+      .on('mouseout', mouseout)
+      .on('click', function(d) {
+        var genre = d.top_genre;
+        refreshGenrePlaylist(genre);
+      });
 
   graph.append('g')
       .attr('class', 'x axis')
@@ -57,4 +73,25 @@ function spotifyGenreGraph(data) {
       .attr('y', 5)
       .text('Number of Listeners');
 
+  // graph label
+  graph.append('text')
+      .attr('class', 'label')
+      .attr('x', 180)
+      .attr('y', -7)
+      .text('Listener’s Top Genres');
+}
+
+function mouseover(d) {
+  tooltip.transition()
+      .duration(200)
+      .style('opacity', 0.9);
+  tooltip.html(d.top_genre.toUpperCase())
+      .style('left', (d3.event.pageX + 25) + 'px')
+      .style('top', (d3.event.pageY - 10) + 'px');
+}
+
+function mouseout(d) {
+  tooltip.transition()
+      .duration(500)
+      .style('opacity', 0);
 }
