@@ -1,11 +1,10 @@
 // load your environmental variables
 var config = getConfig();
 
-// TODO handle when spotity track id's come back as undefined
 function fetchGenrePlaylist(genre) {
   // construct echonest standard playlisting api request http://developer.echonest.com/docs/v4/standard.html
   // use 'bucket=id:spotify&bucket=tracks' to request spotify ids
-  var url = config.echoNestHost + 'api/v4/playlist/static?api_key=' + config.apiKey + '&bucket=id:spotify&bucket=tracks&genre=' + 
+  var url = config.echoNestHost + 'api/v4/playlist/static?api_key=' + config.apiKey + '&bucket=id:spotify&bucket=tracks&genre=' +
     genre + '&format=json&results=20&type=genre-radio';
 
   // asynchronously load requested data with XMLHttpRequest
@@ -24,12 +23,13 @@ function generateSpotifyWidget(title, playlist) {
     'frameborder=0 allowtransparency="true"></iframe>';
   var tracks = [];
   playlist.forEach(function(song) {
-    console.log(song);
-    var trackId = fidToSpid(song.tracks[0].foreign_id);
-    tracks.push(trackId); 
+    // skip tracks if no spotify track id is found
+    if (song.tracks[0] !== undefined) {
+      var trackId = fidToSpid(song.tracks[0].foreign_id);
+      tracks.push(trackId);
+    }
   });
   tracks = tracks.join(',');
-  console.log(tracks);
   var embeddedTracks = widget.replace('TRACKS', tracks);
   embeddedTracks = embeddedTracks.replace('PREFEREDTITLE', 'Genre radio for ' + title);
   var li = $('<span>').html(embeddedTracks);
